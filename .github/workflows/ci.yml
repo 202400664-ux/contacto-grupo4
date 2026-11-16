@@ -1,0 +1,28 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install
+      - run: npm run db:generate
+        env:
+          DATABASE_URL: postgresql://contacts:contacts@localhost:5432/contacts
+      - run: npm run lint
+        env:
+          DATABASE_URL: postgresql://contacts:contacts@localhost:5432/contacts
+          JWT_SECRET: ci-test-secret-that-is-long-enough-123456
+      - run: npm run build
+        env:
+          DATABASE_URL: postgresql://contacts:contacts@localhost:5432/contacts
+          JWT_SECRET: ci-test-secret-that-is-long-enough-123456
+          NEXT_PUBLIC_API_URL: http://localhost:4000/api

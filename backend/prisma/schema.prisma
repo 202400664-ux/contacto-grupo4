@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id     Int    @id @default(autoincrement())
+  nombre String @unique @db.VarChar(30)
+  users  User[]
+
+  @@map("roles")
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  nombre       String    @db.VarChar(100)
+  email        String    @unique @db.VarChar(150)
+  passwordHash String    @map("password_hash") @db.VarChar(255)
+  rolId        Int       @map("rol_id")
+  rol          Role      @relation(fields: [rolId], references: [id])
+  activo       Boolean   @default(true)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  contactos    Contact[]
+
+  @@map("usuarios")
+}
+
+model Contact {
+  id                Int      @id @default(autoincrement())
+  usuarioId         Int      @map("usuario_id")
+  usuario           User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  nombres           String   @db.VarChar(100)
+  apellidos         String   @db.VarChar(100)
+  celular           String?  @db.VarChar(30)
+  telefonoFijo      String?  @map("telefono_fijo") @db.VarChar(30)
+  correo            String?  @db.VarChar(150)
+  direccionCasa     String?  @map("direccion_casa")
+  direccionTrabajo  String?  @map("direccion_trabajo")
+  genero            String?  @db.VarChar(20)
+  fechaNacimiento   DateTime? @map("fecha_nacimiento") @db.Date
+  relacion          String?  @db.VarChar(20)
+  favorito          Boolean  @default(false)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([usuarioId], map: "idx_contactos_usuario")
+  @@map("contactos")
+}
